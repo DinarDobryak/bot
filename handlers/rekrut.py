@@ -55,7 +55,7 @@ async def conditions(callback : types.CallbackQuery):
 
 async def phone_lead(message : types.Message, state : FSMContext):
 	async with state.proxy() as data:
-		data['phone']		
+		data['phone'] = message.contact		
 	await rekruter_data.sql_leads_add(state)
 	await state.finish()
 	await message.reply("Очень рад, что ты решила познакомиться с нами. Мы обязательно свяжемся с тобой в ближайшее время.", reply_markup=keyboards.endsbutton)	
