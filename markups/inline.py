@@ -6,4 +6,4 @@ import os
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
-pillskb = InlineKeyboardMarkup(row_width=2).add(InlineKeyboardButton(text="🔴", callback_data='red')).row(InlineKeyboardButton(text="🔵", callback_data='blue'))
+pillskb = InlineKeyboardMarkup(row_width=2).row(InlineKeyboardButton(text="🔴", callback_data='red')).row(InlineKeyboardButton(text="🔵", callback_data='blue'))

@@ -63,7 +63,7 @@ async def phone_lead(message : types.Message, state : FSMContext):
 async def about_company(message : types.Message):
 	await bot.send_message("Наш дружный коллектив работает с 2014 года, быстро и успешно завоевал доверие профессиональных моделей и брендов.")
 
-async def URL(message : types.Message):
+async def URL_but(message : types.Message):
 	await bot.send_message("http://style-models.ru")
 
 def register_handlers_models(dp : Dispatcher):
@@ -75,5 +75,5 @@ def register_handlers_models(dp : Dispatcher):
 	dp.callback_query_handler(conditions, text="blue")
 	dp.register_message_handler(phone_lead, state=FSMlead.phone)
 	dp.register_message_handler(about_company, commands=['О компании'])
-	dp.register_message_handler(URL, commands=['Наш сайт'])
+	dp.register_message_handler(URL_but, commands=['Наш сайт'])
 
