@@ -7,7 +7,7 @@ def sql_lead():
 	cur = base.cursor()
 	if base:
 		print("База данных Лидов подключена")
-	base.execute('CREATE TABLE IF NOT EXISTS leads(name PRIMARY KEY, town TEXT, age TEXT, phone TEXT)')
+	base.execute('CREATE TABLE IF NOT EXISTS leads(name TEXT, town TEXT, age TEXT, phone)')
 	base.commit()
 
 

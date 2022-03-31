@@ -15,10 +15,16 @@ class FSMlead(StatesGroup):
 	phone = State()
 
 
+
 async def firs_event(message : types.Message):
 	await FSMlead.name.set()
 	await message.reply("Привет, меня зовут Артём, я представляю компанию Style-models, хочу познакомить тебя с нашей вакансией.\nКак я могу к тебе обращаться?")
 
+async def cancel(message: types.Message, state : FSMContext):
+	current_state = await state.get_state()
+	if current_state is None:
+		return
+	await state.finish()
 
 async def name_lead(message : types.Message, state : FSMContext):
 	async with state.proxy() as data:
@@ -29,42 +35,45 @@ async def name_lead(message : types.Message, state : FSMContext):
 async def town_lead(message : types.Message, state : FSMContext):
 	async with state.proxy() as data:
 		data['town'] = message.text
-	await FSMlead.next()
-	await message.reply("Мы рады всем, но в свою команду рассматриваем кандидатов от 18 до 25 лет. Пожалуйста, подскажи сколько тебе полных лет?")	
+	if 	message.text == 'Казань' or message.text == 'Москва':
+			await FSMlead.next()
+			await message.reply("Мы рады всем, но в свою команду рассматриваем кандидатов от 18 до 25 лет. Пожалуйста, подскажи сколько тебе полных лет?")	
+	else:
+		await message.reply("К сожалению мы ещё не работаем в вашем городе.")
+		await state.finish()	
 
 async def age_lead(message : types.Message, state : FSMContext):
 	async with state.proxy() as data:
 		data['age'] = message.text
-	await FSMlead.next()
-	await message.reply("Отлично, продолжим.", reply_markup=inline.pillskb)	
-		
+	if message.text == '18' or message.text == '19' or message.text == '20' or message.text == '21' or message.text == '22' or message.text == '23' or message.text == '24' or message.text == '25':
+			await FSMlead.next()
+			await message.reply("Если вакансия заинтересовала, напиши или поделись с нами номером телефона")	
+	else:
+		await bot.send_message(message.from_user.id, "К сожалению вы нам не подходите.")
+		await state.finish()		
+	
+
+async def phone_lead(message : types.Contact, state : FSMContext):
+	async with state.proxy() as data:
+		data['phone'] = message.text 	
+	await rekruter_data.sql_leads_add(state)
+	await state.finish()
+	await bot.send_message(message.from_user.id, "Очень рад, что ты решила познакомиться с нами. Мы обязательно свяжемся с тобой в ближайшее время.", reply_markup=inline.lastbut)	
+
+
 @dp.callback_query_handler(text="red")
 async def duty(callback : types.CallbackQuery):
 	await callback.message.answer("В твои обязанности, как модели, входит участие в фотосессиях и создании видеоматериалов для рекламы различных шоурумов или интернет-магазинов.")
 	await callback.answer()
-	await asyncio.sleep(2)
-	await bot.send_message("Если вакансия заинтересовала, напиши или поделись с нами номером телефона", reply_markup=keyboards.requsetbutton)
 	
-dp.callback_query_handler(text="blue")
+@dp.callback_query_handler(text="blue")
 async def conditions(callback : types.CallbackQuery):
 	await callback.message.answer("Твой график работы в твоих руках. Для нас важно, чтоб была выполнена норма часов, а именно, 6 часов в день и 30 часов в неделю. Все остальное решаешь ты.\nТвоя зарплата формируется исходя из количества отработанных часов + бонус за выполненные проекты в месяц.\nМы рады новым моделям и поэтому предусмотрели обучение. Длится оно 5 дней. И, отмечу, что обучение оплачивается каждый день, в конце рабочего дня.")
 	await callback.answer()
-	await asyncio.sleep(5)
-	await bot.send_message("Если вакансия заинтересовала, напиши или поделись с нами номером телефона", reply_markup=keyboards.requsetbutton)
-	
 
-async def phone_lead(message : types.Message, state : FSMContext):
-	async with state.proxy() as data:
-		data['phone'] = message.contact		
-	await rekruter_data.sql_leads_add(state)
-	await state.finish()
-	await message.reply("Очень рад, что ты решила познакомиться с нами. Мы обязательно свяжемся с тобой в ближайшее время.", reply_markup=keyboards.endsbutton)	
-	
-async def about_company(message : types.Message):
-	await bot.send_message("Наш дружный коллектив работает с 2014 года, быстро и успешно завоевал доверие профессиональных моделей и брендов.")
-
-async def URL_but(message : types.Message):
-	await bot.send_message("http://style-models.ru")
+@dp.callback_query_handler(text='О компании')	
+async def about_company(callback : types.CallbackQuery):
+	await callback.message.answer('Наш дружный коллектив работает с 2014 года, быстро и успешно завоевал доверие профессиональных моделей и брендов.')
 
 def register_handlers_models(dp : Dispatcher):
 	dp.register_message_handler(firs_event, commands=['start'],state=None)
@@ -73,7 +82,7 @@ def register_handlers_models(dp : Dispatcher):
 	dp.register_message_handler(age_lead, state=FSMlead.age)
 	dp.callback_query_handler(duty, text="red")
 	dp.callback_query_handler(conditions, text="blue")
-	dp.register_message_handler(phone_lead, state=FSMlead.phone)
-	dp.register_message_handler(about_company, commands=['О компании'])
-	dp.register_message_handler(URL_but, commands=['Наш сайт'])
+	dp.register_message_handler(phone_lead, state=FSMlead.phone) # content_types=['contact'],
+	
+	
 
