@@ -47,7 +47,13 @@ async def age_lead(message : types.Message, state : FSMContext):
 		data['age'] = message.text
 	if message.text == '18' or message.text == '19' or message.text == '20' or message.text == '21' or message.text == '22' or message.text == '23' or message.text == '24' or message.text == '25':
 			await FSMlead.next()
-			await message.reply("Если вакансия заинтересовала, напиши или поделись с нами номером телефона")	
+			await message.reply("Очень рад, что ты решила с нами познакомиться. Ниже, ты можешь ознакомится с обязанностями и условиями работы.")
+			await asyncio.sleep(2)
+			await bot.send_message(message.from_user.id, "В твои обязанности, как модели, входит участие в фотосессиях и создании видеоматериалов для рекламы различных шоурумов или интернет-магазинов.")
+			await asyncio.sleep(6)
+			await bot.send_message(message.from_user.id, "Твой график работы в твоих руках. Для нас важно, чтоб была выполнена норма часов, а именно, 6 часов в день и 30 часов в неделю. Все остальное решаешь ты.\nТвоя зарплата формируется исходя из количества отработанных часов + бонус за выполненные проекты в месяц.\nМы рады новым моделям и поэтому предусмотрели обучение. Длится оно 5 дней. И, отмечу, что обучение оплачивается каждый день, в конце рабочего дня.")	
+			await asyncio.sleep(10)
+			await bot.send_message(message.from_user.id, "Если вакансия заинтересовала, напиши или поделись с нами номером телефона.")
 	else:
 		await bot.send_message(message.from_user.id, "К сожалению вы нам не подходите.")
 		await state.finish()		
@@ -58,30 +64,25 @@ async def phone_lead(message : types.Contact, state : FSMContext):
 		data['phone'] = message.text 	
 	await rekruter_data.sql_leads_add(state)
 	await state.finish()
-	await bot.send_message(message.from_user.id, "Очень рад, что ты решила познакомиться с нами. Мы обязательно свяжемся с тобой в ближайшее время.", reply_markup=inline.lastbut)	
+	await bot.send_message(message.from_user.id, "Благодарю за интерес к нашей вакансии. Мы свяжемся с тобой в ближайшее время.", reply_markup = keyboards.endsbutton)	
 
 
-@dp.callback_query_handler(text="red")
-async def duty(callback : types.CallbackQuery):
-	await callback.message.answer("В твои обязанности, как модели, входит участие в фотосессиях и создании видеоматериалов для рекламы различных шоурумов или интернет-магазинов.")
-	await callback.answer()
-	
-@dp.callback_query_handler(text="blue")
-async def conditions(callback : types.CallbackQuery):
-	await callback.message.answer("Твой график работы в твоих руках. Для нас важно, чтоб была выполнена норма часов, а именно, 6 часов в день и 30 часов в неделю. Все остальное решаешь ты.\nТвоя зарплата формируется исходя из количества отработанных часов + бонус за выполненные проекты в месяц.\nМы рады новым моделям и поэтому предусмотрели обучение. Длится оно 5 дней. И, отмечу, что обучение оплачивается каждый день, в конце рабочего дня.")
-	await callback.answer()
-
-@dp.callback_query_handler(text='О компании')	
-async def about_company(callback : types.CallbackQuery):
-	await callback.message.answer('Наш дружный коллектив работает с 2014 года, быстро и успешно завоевал доверие профессиональных моделей и брендов.')
+@dp.message_handler(commands=['О компании', 'Наш сайт'])
+async def buttons(message : types.Message):
+	if message == "О компании":
+		await message.delete()
+		await bot.send_message(message.from_user.id, "Наш дружный коллектив работает с 2014 года, быстро и успешно завоевал доверие профессиональных моделей и брендов.")
+	elif message == "Наш сайт":
+	 	await message.delete()
+	 	await bot.send_message(message.from_user.id, "http://style-models.ru")
 
 def register_handlers_models(dp : Dispatcher):
 	dp.register_message_handler(firs_event, commands=['start'],state=None)
 	dp.register_message_handler(name_lead, state=FSMlead.name)
 	dp.register_message_handler(town_lead, state=FSMlead.town)
 	dp.register_message_handler(age_lead, state=FSMlead.age)
-	dp.callback_query_handler(duty, text="red")
-	dp.callback_query_handler(conditions, text="blue")
+	#dp.callback_query_handler(duty, text="red")
+	#dp.callback_query_handler(conditions, text="blue")
 	dp.register_message_handler(phone_lead, state=FSMlead.phone) # content_types=['contact'],
 	
 	
